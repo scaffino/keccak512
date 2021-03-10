@@ -1,0 +1,22 @@
+import "utils/pack/u32/unpack128.zok" as unpack128
+import "utils/pack/u32/pack128.zok" as pack128 
+import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
+
+def keccak_f(u32[2] A) -> (u32[2]):
+    //initialize an array of 25 values all equal to 0
+    u32[25] B = [0x00000000; 25]
+    //initialize a arrays of 5 values all equal to 0
+    u32[5] C = [0x00000000; 5]
+    u32[5] D = [0x00000000; 5]
+
+//    field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
+
+    //u32 RC = nonStrictUnpack256(9223372036854808585)
+
+    return A
+
+def main() -> (u32[2]):
+    u32[2] A = [0x00000002, 0x00000004]
+    field f = 9223372036854808585
+    u32[8] RC = nonStrictUnpack256(f)
+    return A
