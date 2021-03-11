@@ -1,22 +1,53 @@
+//notes:
+// - use u16 and u8 whenever possible?
+
 import "utils/pack/u32/unpack128.zok" as unpack128
 import "utils/pack/u32/pack128.zok" as pack128 
 import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
+import "utils/casts/u32_to_field.zok" as u32_to_field 
+import "utils/casts/u32_4_to_bool_128.zok" as u32_to_bool 
 
-def keccak_f(u32[2] A) -> (u32[2]):
+def xor128five(u32[5] input) -> (u32):
+    u32 result = input[0] ^ input[1]
+    result = result ^ input[2]
+    result = result ^ input[3]
+    result = result ^ input[4]
+    return result
+
+//25 = width of the permutation
+def keccak_f(u32[25] A) -> (u32[5]):
     //initialize an array of 25 values all equal to 0
     u32[25] B = [0x00000000; 25]
     //initialize a arrays of 5 values all equal to 0
     u32[5] C = [0x00000000; 5]
     u32[5] D = [0x00000000; 5]
+    //round constant RC
+    field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
-//    field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
+    for field i in 0..24 do
 
-    //u32 RC = nonStrictUnpack256(9223372036854808585)
+    C = [
+        xor128five([A[0], A[1], A[2], A[3], A[4]]),
+        xor128five([A[5], A[6], A[7], A[8], A[9]]),
+        xor128five([A[10], A[11], A[12], A[13], A[14]]),
+        xor128five([A[15], A[16], A[17], A[18], A[19]]),
+        xor128five([A[20], A[21], A[22], A[23], A[24]])
+    ]
+    endfor
 
-    return A
+    return C
 
-def main() -> (u32[2]):
-    u32[2] A = [0x00000002, 0x00000004]
-    field f = 9223372036854808585
-    u32[8] RC = nonStrictUnpack256(f)
-    return A
+def main() -> (u32[5]):
+    //===============================================
+    //SOME TESTS
+    //field A = 9223372039002292224
+    //correct sum A+A
+    //field sum = A*2 
+    //u32[4] C = unpack128(A) //u32 notation of A
+    //field G = pack128(C)
+    // binary notation of A
+    //bool[128] binary = u32_to_bool(C)
+    //===============================================
+
+    u32[25] A = [0x00000000, 0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00000006, 0x00000007, 0x00000008, 0x00000009, 0x0000000A, 0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014, 0x00000015, 0x00000016, 0x00000017, 0x00000018]
+    return keccak_f(A)
