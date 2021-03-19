@@ -1,0 +1,72 @@
+import "utils/pack/u32/unpack128.zok" as unpack128
+import "utils/pack/u32/pack128.zok" as pack128 
+import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
+import "utils/casts/u32_to_field.zok" as u32_to_field 
+import "utils/casts/u32_4_to_bool_128.zok" as u32_to_bool128 
+import "utils/casts/u32_8_to_bool_256.zok" as u32_to_bool256 
+
+def xor5u32(u32 input1, u32 input2, u32 input3, u32 input4, u32 input5) -> (u32):
+    u32 result = input1 ^ input2
+    result = result ^ input3
+    result = result ^ input4
+    result = result ^ input5
+    return result
+
+//25 = width of the permutation
+def keccak_f(u32[25][8] A) -> (u32[5][8]):
+
+    u32[8] zeros = [0x00000000; 8]
+    u32[25][8] B = [zeros; 25]
+    u32[5][8] C = [zeros; 5]
+    u32[5][8] D = [zeros; 5]
+
+    u32[8] returnedvalue = [...zeros]
+
+    //round constant RC
+    //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
+
+    for field ii in 0..24 do
+
+        for field jj in 0..7 do
+        
+        u32 temp0 = xor5u32(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
+        C[0][jj] = temp0
+        u32 temp1 = xor5u32(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
+        C[1][jj] = temp1
+        u32 temp2 = xor5u32(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
+        C[2][jj] = temp2
+        u32 temp3 =  xor5u32(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
+        C[3][jj] = temp3
+        u32 temp4 = xor5u32(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
+        C[4][jj] = temp4
+
+        endfor
+
+    endfor
+
+    return C
+
+def main() -> (u32[5][8]):
+    //===============================================
+    //SOME TESTS
+    //field A = 9223372039002292224
+    //correct sum A+A
+    //field sum = A*2 
+    //u32[4] C = unpack128(A) //u32 notation of A
+    //field G = pack128(C)
+    // binary notation of A
+    //bool[128] binary = u32_to_bool(C)
+    //===============================================
+
+    u32[8] zeros_1 = [0x00000000; 8]
+    u32[24][8] temp11 = [zeros_1; 24]
+    u32[8] temp22 = [0x00000001; 8]
+    u32[25][8] AA = [...temp11, temp22]
+    u32 x = AA[0][0]
+    u32 y = AA[1][1]
+    u32 z = AA[2][2]
+    u32 i = AA[3][3]
+    u32 j = AA[4][4]
+    u32 testxor = xor5u32(AA[0][0], AA[1][1], AA[2][2], AA[3][3], AA[4][4])
+    //u32[25][8] A = [0x00000000, 0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00000006, 0x00000007, 0x00000008, 0x00000009, 0x0000000A, 0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014, 0x00000015, 0x00000016, 0x00000017, 0x00000018]
+    return keccak_f(AA)
