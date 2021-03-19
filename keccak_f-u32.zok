@@ -1,6 +1,6 @@
 import "utils/pack/u32/unpack128.zok" as unpack128
 import "utils/pack/u32/pack128.zok" as pack128 
-import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
+import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to bool[256] array
 import "utils/casts/u32_to_field.zok" as u32_to_field 
 import "utils/casts/u32_4_to_bool_128.zok" as u32_to_bool128 
 import "utils/casts/u32_8_to_bool_256.zok" as u32_to_bool256 
@@ -25,9 +25,9 @@ def keccak_f(u32[25][8] A) -> (u32[5][8]):
     //round constant RC
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
-    for field ii in 0..24 do
+    //for field ii in 0..24 do
 
-        for field jj in 0..7 do
+        for field jj in 0..8 do
         
         u32 temp0 = xor5u32(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
         C[0][jj] = temp0
@@ -42,21 +42,11 @@ def keccak_f(u32[25][8] A) -> (u32[5][8]):
 
         endfor
 
-    endfor
+    //endfor
 
     return C
 
 def main() -> (u32[5][8]):
-    //===============================================
-    //SOME TESTS
-    //field A = 9223372039002292224
-    //correct sum A+A
-    //field sum = A*2 
-    //u32[4] C = unpack128(A) //u32 notation of A
-    //field G = pack128(C)
-    // binary notation of A
-    //bool[128] binary = u32_to_bool(C)
-    //===============================================
 
     u32[8] zeros_1 = [0x00000000; 8]
     u32[24][8] temp11 = [zeros_1; 24]
@@ -68,5 +58,23 @@ def main() -> (u32[5][8]):
     u32 i = AA[3][3]
     u32 j = AA[4][4]
     u32 testxor = xor5u32(AA[0][0], AA[1][1], AA[2][2], AA[3][3], AA[4][4])
+
+    field[25] myA = [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1] 
+
+    u32[8] zerosArray = [0x00000000; 8]
+    u32[25][8] myA_casted = [zerosArray; 25]
+
+    for field kk in 0..25 do
+
+        u32[8] tempCasting = nonStrictUnpack256(myA[kk])
+
+        for field jj in 0..8 do
+    
+            myA_casted[kk][jj] = tempCasting[jj]
+    
+        endfor
+
+    endfor
+
     //u32[25][8] A = [0x00000000, 0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00000006, 0x00000007, 0x00000008, 0x00000009, 0x0000000A, 0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014, 0x00000015, 0x00000016, 0x00000017, 0x00000018]
-    return keccak_f(AA)
+    return keccak_f(myA_casted)
