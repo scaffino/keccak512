@@ -1,10 +1,3 @@
-//notes:
-// just casting once in the beginning and use the Boolean 
-// type in the following may prevent unnecessary casting
-// RC which data type? Boolean as well?
-// instead of casting field to bool, 
-// one should wonder if it's possible to have a boolean in the first place, no?
-
 import "utils/pack/u32/unpack128.zok" as unpack128
 import "utils/pack/u32/pack128.zok" as pack128 
 import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
@@ -17,11 +10,11 @@ def booleanXOR(bool bool1, bool bool2) -> (bool):
     return xor
 
 def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> (bool):
-    bool temp1 = booleanXOR(bool1, bool2)
-    bool temp2 = booleanXOR(bool3, bool4)
-    bool temp3 = booleanXOR(temp1, temp2)
-    bool xor5 = booleanXOR(temp3, bool5)
-    return xor5
+    bool result = booleanXOR(bool1, bool2)
+    result = booleanXOR(result, bool3)
+    result = booleanXOR(result, bool4)
+    result = booleanXOR(result, bool5)
+    return result
 
 
 //25 = width of the permutation
@@ -33,50 +26,37 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
     bool[25][256] B = [...C, ...C, ...C, ...C, ...C]
     
     //round constant RC
-
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
     for field ii in 0..24 do
 
-        for field jj in 0..1 do
+        for field jj in 0..255 do
 
-            // not working because of bug #763 (https://github.com/Zokrates/ZoKrates/issues/763)
-            C[0][jj] = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
-            C[1][jj] = booleanXOR_5(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
-            C[2][jj] = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
-            C[3][jj] = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
-            C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
+            // C
+            // compiler bug #763 (https://github.com/Zokrates/ZoKrates/issues/763) - workaround: use temp0
+            bool temp0 = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
+            C[0][jj] = temp0
+            bool temp1 = booleanXOR_5(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
+            C[1][jj] = temp1
+            bool temp2 = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
+            C[2][jj] = temp2
+            bool temp3 = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
+            C[3][jj] = temp3
+            bool temp4 = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
+            C[4][jj] = temp4
 
-    //D
-    // smartpool:
-    // (1) - prendo C1 alla seconda e faccio AND con 0xffffffffffffffff
-    // (2) - prendo C1 e divido per 2 elevato alla 63 (ossia The number of non-negative values for a signed 64-bit integer.)
-    // (3) - (1) OR (2)
-    // (4) - C4 XOR (3) 
-
-    // martin:
-    // (1) - C4 XOR C1 alla seconda - get last 8 bytes
-    // (2) - prendo first 65 bits C1
-    // (3) - (1) OR (2)
+            //D
+    
         
-        //endfor
+        endfor
 
-    //endfor
+    endfor
 
 
     return C
 
-def main() -> (bool):
-    //===============================================
-    //SOME TESTS
-    //field A = 9223372039002292224
-    //correct sum A+A
-    //field sum = A*2 
-    //u32[4] C = unpack128(A) //u32 notation of A
-    //field G = pack128(C)
-    // binary notation of A
-    //bool[128] binary = u32_to_bool(C)
-    //===============================================
+def main() -> (bool[5][256]):
+    
     bool[256] aux1 = [false; 256]
     bool[5][256] aux2 = [aux1, aux1, aux1, aux1, aux1]
     bool[256] aux3 = [true; 256]
@@ -85,4 +65,4 @@ def main() -> (bool):
     bool[25][256] A = [...aux2, ...aux2, ...aux2, ...aux2, ...aux4]
 
 
-    return xor
+    return keccak_f(A)
