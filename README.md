@@ -1,6 +1,6 @@
 # keccak512
 
-This is an attempt to implement the Keccak512 hash function in ZoKrates-v0.6.3.
+This is an attempt to implement the Keccak512 hash function in [ZoKrates-v0.6.4](https://github.com/Zokrates/ZoKrates).
 
 # References
 [SmartPool implementation in solidity](https://github.com/SmartPool/contracts/blob/master/Testpool.sol)
