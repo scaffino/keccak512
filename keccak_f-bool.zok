@@ -22,6 +22,10 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
     bool[5][256] C = [zeros, zeros, zeros, zeros, zeros]
     bool[5][256] D = [...C]
     bool[25][256] B = [...C, ...C, ...C, ...C, ...C]
+
+    bool[192] aux_zeros = [false; 192]
+    bool[64] aux_ones = [true; 64]
+    bool[256] getLast8bytes = [...aux_zeros, ...aux_ones]
     
     //round constant RC
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
@@ -38,14 +42,39 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
             C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
 
             //D
-    
+            //smartPool example code: 
+            //D[0]=C[4] ^ ((C[1] * 2)&0xffffffffffffffff | (C[1] / (2 ** 63)));
+            //D[1]=C[0] ^ ((C[2] * 2)&0xffffffffffffffff | (C[2] / (2 ** 63)));
+            //D[2]=C[1] ^ ((C[3] * 2)&0xffffffffffffffff | (C[3] / (2 ** 63)));
+            //D[3]=C[2] ^ ((C[4] * 2)&0xffffffffffffffff | (C[4] / (2 ** 63)));
+            //D[4]=C[3] ^ ((C[0] * 2)&0xffffffffffffffff | (C[0] / (2 ** 63)));
+            //
+            //  C * 2 means that all digits shift one place to the right (gaps filled with zeros)
+            //  C / (2 ** 63) means that all digits shift 63 places to the right ((gaps filled with zeros))
+            //let's compute the shifts
+            bool oneShiftLeft_C0 = if jj == 255 then false else C[0][jj+1] fi  
+            bool sixtytreeShiftsRight_C0 = if jj < 63 then false else C[0][jj-63] fi  
+            bool oneShiftLeft_C1 = if jj == 255 then false else C[1][jj+1] fi
+            bool sixtytreeShiftsRight_C1 = if jj < 63 then false else C[1][jj-63] fi
+            bool oneShiftLeft_C2 = if jj == 255 then false else C[2][jj+1] fi
+            bool sixtytreeShiftsRight_C2 = if jj < 63 then false else C[2][jj-63] fi
+            bool oneShiftLeft_C3 =if jj == 255 then false else C[3][jj+1] fi
+            bool sixtytreeShiftsRight_C3 = if jj < 63 then false else C[3][jj-63] fi
+            bool oneShiftLeft_C4 = if jj == 255 then false else C[4][jj+1] fi
+            bool sixtytreeShiftsRight_C4 = if jj < 63 then false else C[4][jj-63] fi
+            //let's calculate D
+            D[0][jj] = booleanXOR(C[4][jj], ( (oneShiftLeft_C1 && getLast8bytes[jj]) || sixtytreeShiftsRight_C1 ))
+            D[1][jj] = booleanXOR(C[0][jj], ( (oneShiftLeft_C2 && getLast8bytes[jj]) || sixtytreeShiftsRight_C2 ))
+            D[2][jj] = booleanXOR(C[1][jj], ( (oneShiftLeft_C3 && getLast8bytes[jj]) || sixtytreeShiftsRight_C3 ))
+            D[3][jj] = booleanXOR(C[2][jj], ( (oneShiftLeft_C4 && getLast8bytes[jj]) || sixtytreeShiftsRight_C4 ))
+            D[4][jj] = booleanXOR(C[3][jj], ( (oneShiftLeft_C0 && getLast8bytes[jj]) || sixtytreeShiftsRight_C0 ))  
         
         endfor
 
     endfor
 
 
-    return C
+    return D
 
 def main() -> (field[5]):
 
