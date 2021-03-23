@@ -1,11 +1,11 @@
 import "utils/pack/u32/unpack128.zok" as unpack128
 import "utils/pack/u32/pack128.zok" as pack128 
+import "utils/pack/u32/pack256.zok" as pack256
 import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to bool[256] array
 import "utils/casts/u32_to_field.zok" as u32_to_field 
 import "utils/casts/u32_4_to_bool_128.zok" as u32_to_bool128 
 import "utils/casts/u32_8_to_bool_256.zok" as u32_to_bool256 
 
-//XOR of 5 input elements
 def xor5u32(u32 input1, u32 input2, u32 input3, u32 input4, u32 input5) -> (u32):
     u32 result = input1 ^ input2
     result = result ^ input3
@@ -21,9 +21,7 @@ def keccak_f(u32[25][8] A) -> (u32[5][8]):
     u32[5][8] C = [zeros; 5]
     u32[5][8] D = [zeros; 5]
 
-    u32[8] returnedvalue = [...zeros]
-
-    //round constant RC - I need it at the end 
+    //round constant RC
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
     for field ii in 0..24 do
@@ -31,18 +29,24 @@ def keccak_f(u32[25][8] A) -> (u32[5][8]):
         for field jj in 0..8 do
         
         // C
-        u32 temp0 = xor5u32(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
-        C[0][jj] = temp0
-        u32 temp1 = xor5u32(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
-        C[1][jj] = temp1
-        u32 temp2 = xor5u32(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
-        C[2][jj] = temp2
-        u32 temp3 =  xor5u32(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
-        C[3][jj] = temp3
-        u32 temp4 = xor5u32(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
-        C[4][jj] = temp4
+        C[0][jj] = xor5u32(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
+        C[1][jj] = xor5u32(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
+        C[2][jj] = xor5u32(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
+        C[3][jj] = xor5u32(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
+        C[4][jj] = xor5u32(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
 
         //D
+
+
+        //D[0]=C[4] ^ ((C[1] * 2)&0xffffffffffffffff | (C[1] / (2 ** 63)));
+        // &0xffffffffffffffff means taking the last 8 bytes (8 bytes on the right)
+
+        //Oss: C e' una matrice!!!! 
+        // usare variabile ausiliaria per gestire moltiplicazione per 2 
+        // usare variabile ausiliaria per gestire divisione per 2**63
+        // casting to booleans or to fields?
+        //D[0] =  C[4] ^ ((C[1]*2)&0xffffffffffffffff ^ )
+
 
         endfor
 
@@ -50,14 +54,14 @@ def keccak_f(u32[25][8] A) -> (u32[5][8]):
 
     return C
 
-def main() -> (u32[25][8]):
+def main() -> (field[5]):
 
-    field[25] A_field = [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,20,12,1] 
+    field[25] A_field = [1,2,3,4,5,6,7,0,0,0,0,0,0,12,13,0,0,0,0,0,0,0,3,2,1] 
 
+    //cast from field[25] to u32[25][8]
     u32[8] zeros = [0x00000000; 8]
     u32[25][8] A_u32_8 = [zeros; 25]
 
-    //cast A_field from field[25] to u32[25[8] -> u32 bit level operations are more efficient that those carried out with fields
     for field kk in 0..25 do
 
         u32[8] tempForCasting = nonStrictUnpack256(A_field[kk])
@@ -70,6 +74,7 @@ def main() -> (u32[25][8]):
 
     endfor
 
-    //u32[25][8] A = [0x00000000, 0x00000001, 0x00000002, 0x00000003, 0x00000004, 0x00000005, 0x00000006, 0x00000007, 0x00000008, 0x00000009, 0x0000000A, 0x0000000B, 0x0000000C, 0x0000000D, 0x0000000E, 0x0000000F, 0x00000010, 0x00000011, 0x00000012, 0x00000013, 0x00000014, 0x00000015, 0x00000016, 0x00000017, 0x00000018]
-    return keccak_f(A_u32_8)
-    //return A_u32_8
+    u32[5][8] returnedvalue = keccak_f(A_u32_8)
+    //cast back from u32 to field
+    field[5] back_to_field = [pack256(returnedvalue[0]), pack256(returnedvalue[1]),pack256(returnedvalue[2]),pack256(returnedvalue[3]),pack256(returnedvalue[4])]
+    return back_to_field

@@ -1,14 +1,12 @@
-import "utils/pack/u32/unpack128.zok" as unpack128
-import "utils/pack/u32/pack128.zok" as pack128 
-import "utils/pack/u32/nonStrictUnpack256.zok" as nonStrictUnpack256 //cast field to u32[8] array
-import "utils/casts/u32_to_field.zok" as u32_to_field 
-import "utils/casts/u32_4_to_bool_128.zok" as u32_to_bool128 
-import "utils/casts/u32_8_to_bool_256.zok" as u32_to_bool256 
+import "utils/pack/bool/pack256.zok" as pack256 
+import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
+//boolean xor not provided by zokrates, I used this workaround to have it
 def booleanXOR(bool bool1, bool bool2) -> (bool):
     bool xor = (bool1 || bool2) && !(bool1 && bool2)
     return xor
 
+//boolean xor of 5 inputs
 def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> (bool):
     bool result = booleanXOR(bool1, bool2)
     result = booleanXOR(result, bool3)
@@ -30,20 +28,14 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
 
     for field ii in 0..24 do
 
-        for field jj in 0..255 do
+        for field jj in 0..256 do
 
             // C
-            // compiler bug #763 (https://github.com/Zokrates/ZoKrates/issues/763) - workaround: use temp0
-            bool temp0 = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
-            C[0][jj] = temp0
-            bool temp1 = booleanXOR_5(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
-            C[1][jj] = temp1
-            bool temp2 = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
-            C[2][jj] = temp2
-            bool temp3 = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
-            C[3][jj] = temp3
-            bool temp4 = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
-            C[4][jj] = temp4
+            C[0][jj] = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
+            C[1][jj] = booleanXOR_5(A[5][jj], A[6][jj], A[7][jj], A[8][jj], A[9][jj])
+            C[2][jj] = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
+            C[3][jj] = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
+            C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
 
             //D
     
@@ -55,14 +47,27 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
 
     return C
 
-def main() -> (bool[5][256]):
+def main() -> (field[5]):
+
+    field[25] A_field = [1,2,3,4,5,6,7,0,0,0,0,0,0,12,13,0,0,0,0,0,0,0,3,2,1] 
+
+    //cast from field[25] to bool[25][256]
+    bool[256] zeros = [false; 256]
+    bool[25][256] A_bool = [zeros; 25]
+
+    for field kk in 0..25 do
+
+        bool[256] tempForCasting = nonStrictUnpack256(A_field[kk])
+        
+        for field jj in 0..256 do
     
-    bool[256] aux1 = [false; 256]
-    bool[5][256] aux2 = [aux1, aux1, aux1, aux1, aux1]
-    bool[256] aux3 = [true; 256]
-    bool[5][256] aux4 = [aux3, aux3, aux3, aux3, aux3]
+            A_bool[kk][jj] = tempForCasting[jj]
+    
+        endfor
 
-    bool[25][256] A = [...aux2, ...aux2, ...aux2, ...aux2, ...aux4]
+    endfor
 
-
-    return keccak_f(A)
+    bool[5][256] returnedvalue = keccak_f(A_bool)
+    //cast back from bool to field
+    field[5] back_to_field = [pack256(returnedvalue[0]), pack256(returnedvalue[1]),pack256(returnedvalue[2]),pack256(returnedvalue[3]),pack256(returnedvalue[4])]
+    return back_to_field
