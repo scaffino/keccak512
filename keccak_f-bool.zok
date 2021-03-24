@@ -1,5 +1,3 @@
-// Computation of D does not work for jj = 0: jj+1 has not been assigned/evaluated yet!!
-
 import "utils/pack/bool/pack256.zok" as pack256 
 import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
@@ -43,7 +41,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             C[2][jj] = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
             C[3][jj] = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
             C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
-
+        // I have to close the loop here in order to have all the C[x][jj] completed for the next step
         endfor
 
         for field jj in 0..256 do
@@ -77,7 +75,6 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             D[4][jj] = booleanXOR(C[3][jj], ( (oneShiftLeft_C0 && getLast8bytes[jj]) || sixtytreeShiftsRight_C0 ))  
 
             // A
-            
             A[0][jj] = booleanXOR(A[0][jj], D[0][jj])
             A[1][jj] = booleanXOR(A[1][jj], D[0][jj])
             A[2][jj] = booleanXOR(A[2][jj], D[0][jj])
@@ -103,6 +100,115 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             A[22][jj] = booleanXOR(A[22][jj], D[4][jj])
             A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
             A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
+
+        // I have to close the loop here in order to have all the C[x][jj] completed for the next step
+        endfor
+
+        for field jj in 0..256 do                    
+
+            // Rho and pi steps
+
+            B[0] = A[0]
+
+            bool B8_shiftLeft = if jj > 219 then false else A[1][jj+36] fi  
+            bool B8_shiftRight = if jj < 28 then false else A[1][jj-28] fi
+            B[8][jj] = (B8_shiftLeft && getLast8bytes[jj]) || B8_shiftRight
+
+            bool B11_shiftLeft = if jj > 252 then false else A[2][jj+3] fi  
+            bool B11_shiftRight = if jj < 61 then false else A[2][jj-61] fi
+            B[11][jj] = (B11_shiftLeft && getLast8bytes[jj]) || B11_shiftRight
+
+            bool B19_shiftLeft = if jj > 214 then false else A[3][jj+41] fi  
+            bool B19_shiftRight = if jj < 23 then false else A[3][jj-23] fi
+            B[19][jj] = (B19_shiftLeft && getLast8bytes[jj]) || B19_shiftRight
+
+            bool B22_shiftLeft = if jj > 237 then false else A[4][jj+18] fi  
+            bool B22_shiftRight = if jj < 46 then false else A[4][jj-46] fi
+            B[22][jj] = (B22_shiftLeft && getLast8bytes[jj]) || B22_shiftRight
+
+            bool B2_shiftLeft = if jj > 254 then false else A[5][jj+1] fi  
+            bool B2_shiftRight = if jj < 63 then false else A[5][jj-63] fi
+            B[2][jj] = (B2_shiftLeft && getLast8bytes[jj]) || B2_shiftRight
+
+            bool B5_shiftLeft = if jj > 211 then false else A[6][jj+44] fi  
+            bool B5_shiftRight = if jj < 20 then false else A[6][jj-20] fi
+            B[5][jj] = (B5_shiftLeft && getLast8bytes[jj]) || B5_shiftRight
+
+            bool B13_shiftLeft = if jj > 245 then false else A[7][jj+10] fi  
+            bool B13_shiftRight = if jj < 54 then false else A[7][jj-54] fi
+            B[13][jj] = (B13_shiftLeft && getLast8bytes[jj]) || B13_shiftRight
+
+            bool B16_shiftLeft = if jj > 210 then false else A[8][jj+45] fi  
+            bool B16_shiftRight = if jj < 19 then false else A[8][jj-19] fi
+            B[16][jj] = (B16_shiftLeft && getLast8bytes[jj]) || B16_shiftRight
+
+            bool B24_shiftLeft = if jj > 253 then false else A[9][jj+2] fi  
+            bool B24_shiftRight = if jj < 62 then false else A[9][jj-62] fi
+            B[24][jj] = (B24_shiftLeft && getLast8bytes[jj]) || B24_shiftRight
+
+            bool B4_shiftLeft = if jj > 193 then false else A[10][jj+62] fi  
+            bool B4_shiftRight = if jj < 2 then false else A[10][jj-2] fi
+            B[4][jj] = (B4_shiftLeft && getLast8bytes[jj]) || B4_shiftRight
+            
+            bool B7_shiftLeft = if jj > 249 then false else A[11][jj+6] fi  
+            bool B7_shiftRight = if jj < 58 then false else A[11][jj-58] fi
+            B[7][jj] = (B7_shiftLeft && getLast8bytes[jj]) || B7_shiftRight  
+        
+            bool B10_shiftLeft = if jj > 212 then false else A[12][jj+43] fi  
+            bool B10_shiftRight = if jj < 21 then false else A[12][jj-21] fi
+            B[10][jj] = (B10_shiftLeft && getLast8bytes[jj]) || B10_shiftRight
+
+            bool B18_shiftLeft = if jj > 240 then false else A[13][jj+15] fi  
+            bool B18_shiftRight = if jj < 49 then false else A[13][jj-49] fi
+            B[18][jj] = (B18_shiftLeft && getLast8bytes[jj]) || B18_shiftRight
+
+            bool B21_shiftLeft = if jj > 194 then false else A[14][jj+61] fi  
+            bool B21_shiftRight = if jj < 3 then false else A[14][jj-3] fi
+            B[21][jj] = (B21_shiftLeft && getLast8bytes[jj]) || B21_shiftRight
+
+            bool B1_shiftLeft = if jj > 227 then false else A[15][jj+28] fi  
+            bool B1_shiftRight = if jj < 36 then false else A[15][jj-36] fi
+            B[1][jj] = (B1_shiftLeft && getLast8bytes[jj]) || B1_shiftRight
+
+            bool B9_shiftLeft = if jj > 200 then false else A[16][jj+55] fi  
+            bool B9_shiftRight = if jj < 9 then false else A[16][jj-9] fi
+            B[9][jj] = (B9_shiftLeft && getLast8bytes[jj]) || B9_shiftRight
+
+            bool B12_shiftLeft = if jj > 230 then false else A[17][jj+25] fi  
+            bool B12_shiftRight = if jj < 39 then false else A[17][jj-39] fi
+            B[12][jj] = (B12_shiftLeft && getLast8bytes[jj]) || B12_shiftRight
+
+            bool B15_shiftLeft = if jj > 234 then false else A[18][jj+21] fi  
+            bool B15_shiftRight = if jj < 43 then false else A[18][jj-43] fi
+            B[15][jj] = (B15_shiftLeft && getLast8bytes[jj]) || B15_shiftRight
+
+            bool B23_shiftLeft = if jj > 199 then false else A[19][jj+56] fi  
+            bool B23_shiftRight = if jj < 8 then false else A[19][jj-8] fi
+            B[23][jj] = (B23_shiftLeft && getLast8bytes[jj]) || B23_shiftRight
+
+            bool B3_shiftLeft = if jj > 228 then false else A[20][jj+27] fi  
+            bool B3_shiftRight = if jj < 37 then false else A[20][jj-37] fi
+            B[3][jj] = (B3_shiftLeft && getLast8bytes[jj]) || B3_shiftRight
+
+            bool B6_shiftLeft = if jj > 235 then false else A[21][jj+20] fi  
+            bool B6_shiftRight = if jj < 44 then false else A[21][jj-44] fi
+            B[6][jj] = (B6_shiftLeft && getLast8bytes[jj]) || B6_shiftRight
+
+            bool B14_shiftLeft = if jj > 216 then false else A[22][jj+39] fi  
+            bool B14_shiftRight = if jj < 25 then false else A[22][jj-25] fi
+            B[14][jj] = (B14_shiftLeft && getLast8bytes[jj]) || B14_shiftRight
+
+            bool B17_shiftLeft = if jj > 247 then false else A[23][jj+8] fi  
+            bool B17_shiftRight = if jj < 56 then false else A[23][jj-56] fi
+            B[17][jj] = (B17_shiftLeft && getLast8bytes[jj]) || B17_shiftRight
+
+            bool B20_shiftLeft = if jj > 241 then false else A[24][jj+14] fi  
+            bool B20_shiftRight = if jj < 50 then false else A[24][jj-50] fi
+            B[20][jj] = (B20_shiftLeft && getLast8bytes[jj]) || B20_shiftRight
+
+            //Xi state
+            
+            
             
 
         endfor
@@ -110,12 +216,12 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
     endfor
 
 
-    return A
+    return  B
 
 def main() -> (field[25]):
 
-    field[25] A_field = [6,2,3,4,5,6,7,9,100,3,150,2,7,12,13,5,8,8,8,0,0,0,1,2,1] 
-    //field[25] A_field = [6,5,0,0,0,0,0,0,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
+    //field[25] A_field = [0,2,3,4,5,6,7,9,0,3,150,2,7,12,13,5,8,8,8,0,0,0,1,2,1] 
+    field[25] A_field = [6,5,8,8,1320,2,2,3,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
 
 
     //cast from field[25] to bool[25][256]
@@ -135,11 +241,13 @@ def main() -> (field[25]):
     endfor
 
     bool[25][256] returnedvalue = keccak_f(A_bool)
+
     //cast back from bool to field
     field[25] back_to_field = [0; 25]
     for field kk in 0..25 do
     
-            back_to_field[kk] = pack256(returnedvalue[kk])
+        back_to_field[kk] = pack256(returnedvalue[kk])
     
     endfor
+
     return back_to_field
