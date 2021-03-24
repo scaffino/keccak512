@@ -31,7 +31,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
     //round constant RC
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
-    for field ii in 0..25 do
+    for field ii in 0..1 do
 
         for field jj in 0..256 do
 
@@ -101,7 +101,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
             A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
 
-        // I have to close the loop here in order to have all the C[x][jj] completed for the next step
+        // I have to close the loop here in order to have all the A[x][jj] completed for the next step
         endfor
 
         for field jj in 0..256 do                    
@@ -206,9 +206,38 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             bool B20_shiftRight = if jj < 50 then false else A[24][jj-50] fi
             B[20][jj] = (B20_shiftLeft && getLast8bytes[jj]) || B20_shiftRight
 
+        // I have to close the loop here in order to have all the B[x][jj] completed for the next step
+        endfor
+
+        for field jj in 0..256 do
+
             //Xi state
             
-            
+            A[0][jj] = booleanXOR( B[0][jj], ( !(B[5][jj]) && B[10][jj] ) ) 
+            A[1][jj] = booleanXOR( B[1][jj], ( !(B[6][jj]) && B[11][jj] ) ) 
+            A[2][jj] = booleanXOR( B[2][jj], ( !(B[7][jj]) && B[12][jj] ) ) 
+            A[3][jj] = booleanXOR( B[3][jj], ( !(B[8][jj]) && B[13][jj] ) ) 
+            A[4][jj] = booleanXOR( B[4][jj], ( !(B[9][jj]) && B[14][jj] ) ) 
+            A[5][jj] = booleanXOR( B[5][jj], ( !(B[10][jj]) && B[15][jj] ) ) 
+            A[6][jj] = booleanXOR( B[6][jj], ( !(B[11][jj]) && B[16][jj] ) ) 
+            A[7][jj] = booleanXOR( B[7][jj], ( !(B[12][jj]) && B[17][jj] ) ) 
+            A[8][jj] = booleanXOR( B[8][jj], ( !(B[13][jj]) && B[18][jj] ) ) 
+            A[9][jj] = booleanXOR( B[9][jj], ( !(B[14][jj]) && B[19][jj] ) ) 
+            A[10][jj] = booleanXOR( B[10][jj], ( !(B[15][jj]) && B[20][jj] ) ) 
+            A[11][jj] = booleanXOR( B[11][jj], ( !(B[16][jj]) && B[21][jj] ) ) 
+            A[12][jj] = booleanXOR( B[12][jj], ( !(B[17][jj]) && B[22][jj] ) ) 
+            A[13][jj] = booleanXOR( B[13][jj], ( !(B[18][jj]) && B[23][jj] ) ) 
+            A[14][jj] = booleanXOR( B[14][jj], ( !(B[19][jj]) && B[24][jj] ) ) 
+            A[15][jj] = booleanXOR( B[15][jj], ( !(B[20][jj]) && B[0][jj] ) ) 
+            A[16][jj] = booleanXOR( B[16][jj], ( !(B[21][jj]) && B[1][jj] ) ) 
+            A[17][jj] = booleanXOR( B[17][jj], ( !(B[22][jj]) && B[2][jj] ) ) 
+            A[18][jj] = booleanXOR( B[18][jj], ( !(B[23][jj]) && B[3][jj] ) ) 
+            A[19][jj] = booleanXOR( B[19][jj], ( !(B[24][jj]) && B[4][jj] ) ) 
+            A[20][jj] = booleanXOR( B[20][jj], ( !(B[0][jj]) && B[5][jj] ) ) 
+            A[21][jj] = booleanXOR( B[21][jj], ( !(B[1][jj]) && B[6][jj] ) ) 
+            A[22][jj] = booleanXOR( B[22][jj], ( !(B[2][jj]) && B[7][jj] ) ) 
+            A[23][jj] = booleanXOR( B[23][jj], ( !(B[3][jj]) && B[8][jj] ) ) 
+            A[24][jj] = booleanXOR( B[24][jj], ( !(B[4][jj]) && B[9][jj] ) )          
             
 
         endfor
@@ -216,7 +245,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
     endfor
 
 
-    return  B
+    return  A
 
 def main() -> (field[25]):
 
@@ -243,6 +272,8 @@ def main() -> (field[25]):
     bool[25][256] returnedvalue = keccak_f(A_bool)
 
     //cast back from bool to field
+    //field back_to_field = pack256(returnedvalue)
+
     field[25] back_to_field = [0; 25]
     for field kk in 0..25 do
     
