@@ -1,3 +1,5 @@
+// Computation of D does not work for jj = 0: jj+1 has not been assigned/evaluated yet!!
+
 import "utils/pack/bool/pack256.zok" as pack256 
 import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
@@ -26,11 +28,12 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
     bool[192] aux_zeros = [false; 192]
     bool[64] aux_ones = [true; 64]
     bool[256] getLast8bytes = [...aux_zeros, ...aux_ones]
+
     
     //round constant RC
     //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
 
-    for field ii in 0..24 do
+    for field ii in 0..25 do
 
         for field jj in 0..256 do
 
@@ -49,7 +52,7 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
             //D[3]=C[2] ^ ((C[4] * 2)&0xffffffffffffffff | (C[4] / (2 ** 63)));
             //D[4]=C[3] ^ ((C[0] * 2)&0xffffffffffffffff | (C[0] / (2 ** 63)));
             //
-            //  C * 2 means that all digits shift one place to the right (gaps filled with zeros)
+            //  C * 2 means that all digits shift one place to the left (gaps filled with zeros)
             //  C / (2 ** 63) means that all digits shift 63 places to the right ((gaps filled with zeros))
             //let's compute the shifts
             bool oneShiftLeft_C0 = if jj == 255 then false else C[0][jj+1] fi  
@@ -68,17 +71,48 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
             D[2][jj] = booleanXOR(C[1][jj], ( (oneShiftLeft_C3 && getLast8bytes[jj]) || sixtytreeShiftsRight_C3 ))
             D[3][jj] = booleanXOR(C[2][jj], ( (oneShiftLeft_C4 && getLast8bytes[jj]) || sixtytreeShiftsRight_C4 ))
             D[4][jj] = booleanXOR(C[3][jj], ( (oneShiftLeft_C0 && getLast8bytes[jj]) || sixtytreeShiftsRight_C0 ))  
-        
+
+            // A
+            
+            //A[0][jj] = booleanXOR(A[0][jj], D[0][jj])
+            //A[1][jj] = booleanXOR(A[1][jj], D[0][jj])
+            //A[2][jj] = booleanXOR(A[2][jj], D[0][jj])
+            //A[3][jj] = booleanXOR(A[3][jj], D[0][jj])
+            //A[4][jj] = booleanXOR(A[4][jj], D[0][jj])
+            //A[5][jj] = booleanXOR(A[5][jj], D[1][jj])
+            //A[6][jj] = booleanXOR(A[6][jj], D[1][jj])
+            //A[7][jj] = booleanXOR(A[7][jj], D[1][jj])
+            //A[8][jj] = booleanXOR(A[8][jj], D[1][jj])
+            //A[9][jj] = booleanXOR(A[9][jj], D[1][jj])
+            //A[10][jj] = booleanXOR(A[10][jj], D[2][jj])
+            //A[11][jj] = booleanXOR(A[11][jj], D[2][jj])
+            //A[12][jj] = booleanXOR(A[12][jj], D[2][jj])
+            //A[13][jj] = booleanXOR(A[13][jj], D[2][jj])
+            //A[14][jj] = booleanXOR(A[14][jj], D[2][jj])
+            //A[15][jj] = booleanXOR(A[15][jj], D[3][jj])
+            //A[16][jj] = booleanXOR(A[16][jj], D[3][jj])
+            //A[17][jj] = booleanXOR(A[17][jj], D[3][jj])
+            //A[18][jj] = booleanXOR(A[18][jj], D[3][jj])
+            //A[19][jj] = booleanXOR(A[19][jj], D[3][jj])
+            //A[20][jj] = booleanXOR(A[20][jj], D[4][jj])
+            //A[21][jj] = booleanXOR(A[21][jj], D[4][jj])
+            //A[22][jj] = booleanXOR(A[22][jj], D[4][jj])
+            //A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
+            //A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
+            
+
         endfor
 
     endfor
 
 
-    return D
+    return C
 
 def main() -> (field[5]):
 
-    field[25] A_field = [1,2,3,4,5,6,7,0,0,0,0,0,0,12,13,0,0,0,0,0,0,0,3,2,1] 
+    field[25] A_field = [0,2,3,4,5,6,7,0,0,0,0,0,0,12,13,0,0,0,0,0,0,0,1,2,1] 
+    //field[25] A_field = [6,5,0,0,0,0,0,0,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
+
 
     //cast from field[25] to bool[25][256]
     bool[256] zeros = [false; 256]
@@ -98,5 +132,10 @@ def main() -> (field[5]):
 
     bool[5][256] returnedvalue = keccak_f(A_bool)
     //cast back from bool to field
-    field[5] back_to_field = [pack256(returnedvalue[0]), pack256(returnedvalue[1]),pack256(returnedvalue[2]),pack256(returnedvalue[3]),pack256(returnedvalue[4])]
+    field[5] back_to_field = [0; 5]
+    for field kk in 0..5 do
+    
+            back_to_field[kk] = pack256(returnedvalue[kk])
+    
+    endfor
     return back_to_field
