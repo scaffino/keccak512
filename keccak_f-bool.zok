@@ -18,7 +18,7 @@ def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> 
 
 
 //25 = width of the permutation
-def keccak_f(bool[25][256] A) -> (bool[5][256]):
+def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
     bool[256] zeros = [false; 256]
     bool[5][256] C = [zeros, zeros, zeros, zeros, zeros]
@@ -43,6 +43,10 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
             C[2][jj] = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
             C[3][jj] = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
             C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
+
+        endfor
+
+        for field jj in 0..256 do
 
             //D
             //smartPool example code: 
@@ -74,31 +78,31 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
 
             // A
             
-            //A[0][jj] = booleanXOR(A[0][jj], D[0][jj])
-            //A[1][jj] = booleanXOR(A[1][jj], D[0][jj])
-            //A[2][jj] = booleanXOR(A[2][jj], D[0][jj])
-            //A[3][jj] = booleanXOR(A[3][jj], D[0][jj])
-            //A[4][jj] = booleanXOR(A[4][jj], D[0][jj])
-            //A[5][jj] = booleanXOR(A[5][jj], D[1][jj])
-            //A[6][jj] = booleanXOR(A[6][jj], D[1][jj])
-            //A[7][jj] = booleanXOR(A[7][jj], D[1][jj])
-            //A[8][jj] = booleanXOR(A[8][jj], D[1][jj])
-            //A[9][jj] = booleanXOR(A[9][jj], D[1][jj])
-            //A[10][jj] = booleanXOR(A[10][jj], D[2][jj])
-            //A[11][jj] = booleanXOR(A[11][jj], D[2][jj])
-            //A[12][jj] = booleanXOR(A[12][jj], D[2][jj])
-            //A[13][jj] = booleanXOR(A[13][jj], D[2][jj])
-            //A[14][jj] = booleanXOR(A[14][jj], D[2][jj])
-            //A[15][jj] = booleanXOR(A[15][jj], D[3][jj])
-            //A[16][jj] = booleanXOR(A[16][jj], D[3][jj])
-            //A[17][jj] = booleanXOR(A[17][jj], D[3][jj])
-            //A[18][jj] = booleanXOR(A[18][jj], D[3][jj])
-            //A[19][jj] = booleanXOR(A[19][jj], D[3][jj])
-            //A[20][jj] = booleanXOR(A[20][jj], D[4][jj])
-            //A[21][jj] = booleanXOR(A[21][jj], D[4][jj])
-            //A[22][jj] = booleanXOR(A[22][jj], D[4][jj])
-            //A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
-            //A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
+            A[0][jj] = booleanXOR(A[0][jj], D[0][jj])
+            A[1][jj] = booleanXOR(A[1][jj], D[0][jj])
+            A[2][jj] = booleanXOR(A[2][jj], D[0][jj])
+            A[3][jj] = booleanXOR(A[3][jj], D[0][jj])
+            A[4][jj] = booleanXOR(A[4][jj], D[0][jj])
+            A[5][jj] = booleanXOR(A[5][jj], D[1][jj])
+            A[6][jj] = booleanXOR(A[6][jj], D[1][jj])
+            A[7][jj] = booleanXOR(A[7][jj], D[1][jj])
+            A[8][jj] = booleanXOR(A[8][jj], D[1][jj])
+            A[9][jj] = booleanXOR(A[9][jj], D[1][jj])
+            A[10][jj] = booleanXOR(A[10][jj], D[2][jj])
+            A[11][jj] = booleanXOR(A[11][jj], D[2][jj])
+            A[12][jj] = booleanXOR(A[12][jj], D[2][jj])
+            A[13][jj] = booleanXOR(A[13][jj], D[2][jj])
+            A[14][jj] = booleanXOR(A[14][jj], D[2][jj])
+            A[15][jj] = booleanXOR(A[15][jj], D[3][jj])
+            A[16][jj] = booleanXOR(A[16][jj], D[3][jj])
+            A[17][jj] = booleanXOR(A[17][jj], D[3][jj])
+            A[18][jj] = booleanXOR(A[18][jj], D[3][jj])
+            A[19][jj] = booleanXOR(A[19][jj], D[3][jj])
+            A[20][jj] = booleanXOR(A[20][jj], D[4][jj])
+            A[21][jj] = booleanXOR(A[21][jj], D[4][jj])
+            A[22][jj] = booleanXOR(A[22][jj], D[4][jj])
+            A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
+            A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
             
 
         endfor
@@ -106,11 +110,11 @@ def keccak_f(bool[25][256] A) -> (bool[5][256]):
     endfor
 
 
-    return C
+    return A
 
-def main() -> (field[5]):
+def main() -> (field[25]):
 
-    field[25] A_field = [0,2,3,4,5,6,7,0,0,0,0,0,0,12,13,0,0,0,0,0,0,0,1,2,1] 
+    field[25] A_field = [6,2,3,4,5,6,7,9,100,3,150,2,7,12,13,5,8,8,8,0,0,0,1,2,1] 
     //field[25] A_field = [6,5,0,0,0,0,0,0,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
 
 
@@ -130,10 +134,10 @@ def main() -> (field[5]):
 
     endfor
 
-    bool[5][256] returnedvalue = keccak_f(A_bool)
+    bool[25][256] returnedvalue = keccak_f(A_bool)
     //cast back from bool to field
-    field[5] back_to_field = [0; 5]
-    for field kk in 0..5 do
+    field[25] back_to_field = [0; 25]
+    for field kk in 0..25 do
     
             back_to_field[kk] = pack256(returnedvalue[kk])
     
