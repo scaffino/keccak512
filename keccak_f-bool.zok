@@ -27,11 +27,10 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
     bool[64] aux_ones = [true; 64]
     bool[256] getLast8bytes = [...aux_zeros, ...aux_ones]
 
-    
     //round constant RC
-    //field [24] RC = [1, 32898, 9223372036854808714, 9223372039002292224, 32907, 2147483649, 9223372039002292353, 9223372036854808585, 138, 136, 2147516425, 2147483658, 2147516555, 9223372036854775947, 9223372036854808713, 9223372036854808579, 9223372036854808578, 9223372036854775936, 32778, 9223372039002259466, 9223372039002292353, 9223372036854808704, 2147483649, 9223372039002292232]
+    bool[24][256] RC = [nonStrictUnpack256(1), nonStrictUnpack256(32898), nonStrictUnpack256(9223372036854808714), nonStrictUnpack256(9223372039002292224), nonStrictUnpack256(32907), nonStrictUnpack256(2147483649), nonStrictUnpack256(9223372039002292353), nonStrictUnpack256(9223372036854808585), nonStrictUnpack256(138), nonStrictUnpack256(136), nonStrictUnpack256(2147516425), nonStrictUnpack256(2147483658), nonStrictUnpack256(2147516555), nonStrictUnpack256(9223372036854775947), nonStrictUnpack256(9223372036854808713), nonStrictUnpack256(9223372036854808579), nonStrictUnpack256(9223372036854808578), nonStrictUnpack256(9223372036854775936), nonStrictUnpack256(32778), nonStrictUnpack256(9223372039002259466), nonStrictUnpack256(9223372039002292353), nonStrictUnpack256(9223372036854808704), nonStrictUnpack256(2147483649), nonStrictUnpack256(9223372039002292232)]
 
-    for field ii in 0..1 do
+    for field ii in 0..24 do
 
         for field jj in 0..256 do
 
@@ -237,7 +236,10 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             A[21][jj] = booleanXOR( B[21][jj], ( !(B[1][jj]) && B[6][jj] ) ) 
             A[22][jj] = booleanXOR( B[22][jj], ( !(B[2][jj]) && B[7][jj] ) ) 
             A[23][jj] = booleanXOR( B[23][jj], ( !(B[3][jj]) && B[8][jj] ) ) 
-            A[24][jj] = booleanXOR( B[24][jj], ( !(B[4][jj]) && B[9][jj] ) )          
+            A[24][jj] = booleanXOR( B[24][jj], ( !(B[4][jj]) && B[9][jj] ) )   
+
+            // iota state
+            A[0][jj] = booleanXOR( A[0][jj], RC[ii][jj])       
             
 
         endfor
