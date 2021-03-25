@@ -1,0 +1,14 @@
+import "utils/pack/bool/pack256.zok" as pack256 
+import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
+
+from "./keccak_f-bool" import main as keccak_f
+
+//def sponge() -> ():
+    
+    //return result
+
+def main() -> (field[25]):
+
+    field[25] A_field = [6,5,8,8,1320,2,2,3,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
+
+    return keccak_f(A_field)

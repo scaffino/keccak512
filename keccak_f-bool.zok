@@ -1,7 +1,7 @@
 import "utils/pack/bool/pack256.zok" as pack256 
 import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
-//boolean xor not provided by zokrates, I used this workaround to have it
+//boolean xor not provided by zokrates v0.6.4, I used this workaround to have it
 def booleanXOR(bool bool1, bool bool2) -> (bool):
     bool xor = (bool1 || bool2) && !(bool1 && bool2)
     return xor
@@ -249,11 +249,10 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
     return  A
 
-def main() -> (field[25]):
+def main(field[25] A_field) -> (field[25]):
 
     //field[25] A_field = [0,2,3,4,5,6,7,9,0,3,150,2,7,12,13,5,8,8,8,0,0,0,1,2,1] 
-    field[25] A_field = [6,5,8,8,1320,2,2,3,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
-
+    //field[25] A_field = [6,5,8,8,1320,2,2,3,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
 
     //cast from field[25] to bool[25][256]
     bool[256] zeros = [false; 256]
@@ -274,8 +273,6 @@ def main() -> (field[25]):
     bool[25][256] returnedvalue = keccak_f(A_bool)
 
     //cast back from bool to field
-    //field back_to_field = pack256(returnedvalue)
-
     field[25] back_to_field = [0; 25]
     for field kk in 0..25 do
     
