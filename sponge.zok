@@ -1,7 +1,7 @@
 import "utils/pack/bool/pack256.zok" as pack256 
 import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
-from "./keccak_f-bool" import main as keccak_f
+from "./keccak_f" import main as keccak_f
 from "./helper" import fieldXOR as fieldXOR
 
 def sponge(field[9] M) -> (field[25]):
