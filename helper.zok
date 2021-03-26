@@ -1,0 +1,26 @@
+import "utils/pack/bool/pack256.zok" as pack256 
+import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
+
+def booleanXOR(bool bool1, bool bool2) -> (bool):
+    bool xor = (bool1 || bool2) && !(bool1 && bool2)
+    return xor
+
+def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> (bool):
+    bool result = booleanXOR(bool1, bool2)
+    result = booleanXOR(result, bool3)
+    result = booleanXOR(result, bool4)
+    result = booleanXOR(result, bool5)
+    return result
+
+def fieldXOR(field input1, field input2) -> (field):
+    bool[256] input1_bool = nonStrictUnpack256(input1)
+    bool[256] input2_bool = nonStrictUnpack256(input2)
+    bool[256] xorResult = [false; 256]
+    for field ii in 0..256 do 
+        xorResult[ii] = booleanXOR(input1_bool[ii], input2_bool[ii])
+    endfor
+    field xor = pack256(xorResult)
+    return xor 
+
+def main() -> ():
+    return 

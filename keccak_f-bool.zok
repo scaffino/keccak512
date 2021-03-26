@@ -1,19 +1,8 @@
 import "utils/pack/bool/pack256.zok" as pack256 
 import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256 
 
-//boolean xor not provided by zokrates v0.6.4, I used this workaround to have it
-def booleanXOR(bool bool1, bool bool2) -> (bool):
-    bool xor = (bool1 || bool2) && !(bool1 && bool2)
-    return xor
-
-//boolean xor of 5 inputs
-def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> (bool):
-    bool result = booleanXOR(bool1, bool2)
-    result = booleanXOR(result, bool3)
-    result = booleanXOR(result, bool4)
-    result = booleanXOR(result, bool5)
-    return result
-
+from "./helper" import booleanXOR as booleanXOR
+from "./helper" import booleanXOR_5 as booleanXOR_5
 
 // 25 = width of the permutation
 // A is the keccakState
@@ -33,9 +22,9 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
     for field ii in 0..24 do //correct is 0..24
 
-        for field jj in 0..256 do
+        // theta step (comprises C, D, A)
 
-            // theta step: C, D, A
+        for field jj in 0..256 do
 
             // C
             C[0][jj] = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
@@ -43,21 +32,12 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             C[2][jj] = booleanXOR_5(A[10][jj], A[11][jj], A[12][jj], A[13][jj], A[14][jj])
             C[3][jj] = booleanXOR_5(A[15][jj], A[16][jj], A[17][jj], A[18][jj], A[19][jj])
             C[4][jj] = booleanXOR_5(A[20][jj], A[21][jj], A[22][jj], A[23][jj], A[24][jj])
-        // I have to close the loop here in order to have all the C[x][jj] completed for the next step
+        // close the loop here so to have all the C[x][jj] completed for the next step
         endfor
 
         for field jj in 0..256 do
-
-            //smartPool example code: 
-            //D[0]=C[4] ^ ((C[1] * 2)&0xffffffffffffffff | (C[1] / (2 ** 63)));
-            //D[1]=C[0] ^ ((C[2] * 2)&0xffffffffffffffff | (C[2] / (2 ** 63)));
-            //D[2]=C[1] ^ ((C[3] * 2)&0xffffffffffffffff | (C[3] / (2 ** 63)));
-            //D[3]=C[2] ^ ((C[4] * 2)&0xffffffffffffffff | (C[4] / (2 ** 63)));
-            //D[4]=C[3] ^ ((C[0] * 2)&0xffffffffffffffff | (C[0] / (2 ** 63)));
-            //
-            //  C * 2 means that all digits shift one place to the left (gaps filled with zeros)
-            //  C / (2 ** 63) means that all digits shift 63 places to the right ((gaps filled with zeros))
-            //let's compute the shifts (rotations)
+            
+            //compute the shifts (rotations) for D
             bool oneShiftLeft_C0 = if jj == 255 then false else C[0][jj+1] fi  
             bool sixtytreeShiftsRight_C0 = if jj < 63 then false else C[0][jj-63] fi  
             bool oneShiftLeft_C1 = if jj == 255 then false else C[1][jj+1] fi
@@ -102,14 +82,14 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             A[23][jj] = booleanXOR(A[23][jj], D[4][jj])
             A[24][jj] = booleanXOR(A[24][jj], D[4][jj])
 
-        // I have to close the loop here in order to have all the A[x][jj] completed for the next step
+        // close the loop here so to have all the A[x][jj] completed for the next step
         endfor
 
         for field jj in 0..256 do                    
 
             // Rho and pi steps
-            //shifts are rotations
 
+            //shifts are rotations
             B[0] = A[0]
 
             bool B8_shiftLeft = if jj > 219 then false else A[1][jj+36] fi  
@@ -208,7 +188,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             bool B20_shiftRight = if jj < 50 then false else A[24][jj-50] fi
             B[20][jj] = (B20_shiftLeft && getLast8bytes[jj]) || B20_shiftRight
 
-        // I have to close the loop here in order to have all the B[x][jj] completed for the next step
+        // close the loop here so to have all the B[x][jj] completed for the next step
         endfor
 
         for field jj in 0..256 do
@@ -252,10 +232,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
     return  A
 
-def main(field[25] A_field) -> (field[25]):
-
-    //field[25] A_field = [0,2,3,4,5,6,7,9,0,3,150,2,7,12,13,5,8,8,8,0,0,0,1,2,1] 
-    //field[25] A_field = [6,5,8,8,1320,2,2,3,0,0,120,0,0,0,40,0,0,0,0,0,0,3,2,1,1] 
+def main(field[25] A_field) -> (field[25]): 
 
     //cast from field[25] to bool[25][256]
     bool[256] zeros = [false; 256]
