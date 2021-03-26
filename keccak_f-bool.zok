@@ -15,7 +15,8 @@ def booleanXOR_5(bool bool1, bool bool2, bool bool3, bool bool4, bool bool5) -> 
     return result
 
 
-//25 = width of the permutation
+// 25 = width of the permutation
+// A is the keccakState
 def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
     bool[256] zeros = [false; 256]
@@ -30,9 +31,11 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
     //round constant RC
     bool[24][256] RC = [nonStrictUnpack256(1), nonStrictUnpack256(32898), nonStrictUnpack256(9223372036854808714), nonStrictUnpack256(9223372039002292224), nonStrictUnpack256(32907), nonStrictUnpack256(2147483649), nonStrictUnpack256(9223372039002292353), nonStrictUnpack256(9223372036854808585), nonStrictUnpack256(138), nonStrictUnpack256(136), nonStrictUnpack256(2147516425), nonStrictUnpack256(2147483658), nonStrictUnpack256(2147516555), nonStrictUnpack256(9223372036854775947), nonStrictUnpack256(9223372036854808713), nonStrictUnpack256(9223372036854808579), nonStrictUnpack256(9223372036854808578), nonStrictUnpack256(9223372036854775936), nonStrictUnpack256(32778), nonStrictUnpack256(9223372039002259466), nonStrictUnpack256(9223372039002292353), nonStrictUnpack256(9223372036854808704), nonStrictUnpack256(2147483649), nonStrictUnpack256(9223372039002292232)]
 
-    for field ii in 0..24 do
+    for field ii in 0..24 do //correct is 0..24
 
         for field jj in 0..256 do
+
+            // theta step: C, D, A
 
             // C
             C[0][jj] = booleanXOR_5(A[0][jj], A[1][jj], A[2][jj], A[3][jj], A[4][jj])
@@ -45,7 +48,6 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
         for field jj in 0..256 do
 
-            //D
             //smartPool example code: 
             //D[0]=C[4] ^ ((C[1] * 2)&0xffffffffffffffff | (C[1] / (2 ** 63)));
             //D[1]=C[0] ^ ((C[2] * 2)&0xffffffffffffffff | (C[2] / (2 ** 63)));
@@ -55,7 +57,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             //
             //  C * 2 means that all digits shift one place to the left (gaps filled with zeros)
             //  C / (2 ** 63) means that all digits shift 63 places to the right ((gaps filled with zeros))
-            //let's compute the shifts
+            //let's compute the shifts (rotations)
             bool oneShiftLeft_C0 = if jj == 255 then false else C[0][jj+1] fi  
             bool sixtytreeShiftsRight_C0 = if jj < 63 then false else C[0][jj-63] fi  
             bool oneShiftLeft_C1 = if jj == 255 then false else C[1][jj+1] fi
@@ -66,7 +68,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
             bool sixtytreeShiftsRight_C3 = if jj < 63 then false else C[3][jj-63] fi
             bool oneShiftLeft_C4 = if jj == 255 then false else C[4][jj+1] fi
             bool sixtytreeShiftsRight_C4 = if jj < 63 then false else C[4][jj-63] fi
-            //let's calculate D
+            // D
             D[0][jj] = booleanXOR(C[4][jj], ( (oneShiftLeft_C1 && getLast8bytes[jj]) || sixtytreeShiftsRight_C1 ))
             D[1][jj] = booleanXOR(C[0][jj], ( (oneShiftLeft_C2 && getLast8bytes[jj]) || sixtytreeShiftsRight_C2 ))
             D[2][jj] = booleanXOR(C[1][jj], ( (oneShiftLeft_C3 && getLast8bytes[jj]) || sixtytreeShiftsRight_C3 ))
@@ -106,6 +108,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
         for field jj in 0..256 do                    
 
             // Rho and pi steps
+            //shifts are rotations
 
             B[0] = A[0]
 
