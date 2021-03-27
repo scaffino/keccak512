@@ -4,7 +4,7 @@ import "utils/pack/bool/nonStrictUnpack256.zok" as nonStrictUnpack256
 from "./keccak_f" import main as keccak_f
 from "./helper" import fieldXOR as fieldXOR
 
-def sponge(field[9] M) -> (field[25]):
+def sponge(field[9] M) -> (field[16]):
 
     M[5] = 1
     M[8] = 9223372036854775808
@@ -22,12 +22,62 @@ def sponge(field[9] M) -> (field[25]):
         S = keccak_f(S)
     endfor
 
+    // Squeezing Phase
+    // S casted to boolean
+    bool[256] zeros = [false; 256]
+    bool[25][256] S_bool = [zeros; 25]
 
+    for field kk in 0..25 do
+
+        bool[256] tempForCasting = nonStrictUnpack256(S[kk])
+        
+        for field jj in 0..256 do
     
-    return S
+            S_bool[kk][jj] = tempForCasting[jj]
+    
+        endfor
+
+    endfor
+
+    bool[224] aux_zeros1 = [false; 224]
+    bool[32] aux_ones = [true; 32]
+    bool[256] getLast4bytes = [...aux_zeros1, ...aux_ones]
+
+    bool[16][256] result = [zeros; 16]
+    field b = 0
+    //since there is no suitable and efficient if statement, I use 2 for loops as workaround
+    for field yy in 0..1 do 
+        for field xx in 0..5 do 
+            for field nn in 0..256 do
+                result[b][nn] = if ((xx+5*yy) < 9) then (S_bool[5*xx+yy][nn] && getLast4bytes[nn]) else false fi 
+                result[b+1][nn] = if nn < 32 then false else S_bool[5*xx+yy][nn-32] fi 
+            endfor
+            b = b + 2
+        endfor
+    endfor
+
+    for field yy in 1..2 do 
+        for field xx in 0..3 do 
+            for field nn in 0..256 do
+                result[b][nn] = if ((xx+5*yy) < 9) then (S_bool[5*xx+yy][nn] && getLast4bytes[nn]) else false fi 
+                result[b+1][nn] = if nn < 32 then false else S_bool[5*xx+yy][nn-32] fi 
+            endfor
+            b = b + 2
+        endfor
+    endfor
+
+    //cast result to field
+    field[16] digest = [0; 16]
+    for field kk in 0..16 do
+    
+        digest[kk] = pack256(result[kk])
+    
+    endfor
+    
+    return digest
 
 
-def main() -> (field[25]):
+def main() -> (field[16]):
 
     field[9] M = [1,2,3,4,5,6,7,8,99]
 
