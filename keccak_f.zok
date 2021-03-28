@@ -193,7 +193,7 @@ def keccak_f(bool[25][256] A) -> (bool[25][256]):
 
         for field jj in 0..256 do
 
-            //Xi state
+            //Chi state
             
             A[0][jj] = booleanXOR( B[0][jj], ( !(B[5][jj]) && B[10][jj] ) ) 
             A[1][jj] = booleanXOR( B[1][jj], ( !(B[6][jj]) && B[11][jj] ) ) 
